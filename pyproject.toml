@@ -1,0 +1,7 @@
+[project]
+name = "gaptrace"
+version = "0.1.0"
+dependencies = ["typer", "rich"]
+
+[project.scripts]
+gaptrace = "gaptrace.cli:main"
