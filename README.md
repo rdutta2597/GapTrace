@@ -41,7 +41,27 @@ It asks 👉 "what logical paths are missing?"
 
 ## 🚀 Quick Start
 
-### Installation
+### Option 1: Dev Container (Recommended for VS Code)
+
+```bash
+# Clone the repository
+git clone <repo-url>
+cd GapTrace
+
+# Open in VS Code
+code .
+
+# When prompted, click "Reopen in Container"
+# Or from command palette: Dev Containers: Reopen in Container
+```
+
+The dev container automatically:
+- ✅ Installs all dependencies
+- ✅ Sets up libclang for AST parsing
+- ✅ Creates Python virtual environment
+- ✅ Installs dev tools (pytest, black, ruff)
+
+### Option 2: Local Installation
 
 ```bash
 # Clone the repository
@@ -54,6 +74,23 @@ source .venv/bin/activate
 
 # Install in development mode
 pip install -e .
+```
+
+**macOS:** Install LLVM first:
+```bash
+brew install llvm
+export LLVM_CONFIG_PATH=$(brew --prefix llvm)
+```
+
+### Option 3: Docker Compose
+
+```bash
+# Clone the repository
+git clone <repo-url>
+cd GapTrace
+
+# Build and run dev container
+docker-compose -f docker-compose.dev.yml run dev
 ```
 
 ### Current Usage (v0.1.0)

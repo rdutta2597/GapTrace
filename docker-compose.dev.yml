@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    image: gaptrace-dev
+    container_name: gaptrace-dev
+    volumes:
+      - .:/workspace:cached
+      - /workspace/.venv
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LLVM_CONFIG_PATH=/usr/lib/llvm-11/bin/llvm-config
+    working_dir: /workspace
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+    networks:
+      - gaptrace
+
+networks:
+  gaptrace:
+    driver: bridge

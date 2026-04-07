@@ -1,0 +1,17 @@
+# Dev container ignore file
+.git
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.pytest_cache
+.coverage
+htmlcov
+dist
+build
+.vscode
+.DS_Store
+*.swp
+*.swo
+*~
