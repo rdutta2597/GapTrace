@@ -3,22 +3,35 @@
 import json
 import os
 from pathlib import Path
-from typing import List, Dict, Optional, Set
+from typing import Dict, List, Optional, Set
 
 # Configure libclang before importing Index
 try:
     from clang import cindex
-    if os.path.exists('/opt/homebrew/opt/llvm/lib/libclang.dylib'):
-        cindex.conf.set_library_file('/opt/homebrew/opt/llvm/lib/libclang.dylib')
-    elif os.path.exists('/usr/lib/libclang.dylib'):
-        cindex.conf.set_library_file('/usr/lib/libclang.dylib')
+    # Try common library locations in order of preference
+    libclang_paths = [
+        '/opt/homebrew/opt/llvm/lib/libclang.dylib',  # macOS M1/M2
+        '/usr/lib/libclang.dylib',                      # macOS Intel
+        '/usr/lib/llvm-11/lib/libclang.so',             # Linux (LLVM 11)
+        '/usr/lib/llvm-12/lib/libclang.so',             # Linux (LLVM 12)
+        '/usr/lib/llvm-13/lib/libclang.so',             # Linux (LLVM 13)
+        '/usr/lib/x86_64-linux-gnu/libclang.so',        # Linux (Debian/Ubuntu)
+        '/usr/lib/aarch64-linux-gnu/libclang.so',       # Linux (ARM64/Debian)
+    ]
+    for path in libclang_paths:
+        if os.path.exists(path):
+            cindex.conf.set_library_file(path)
+            break
 except Exception:
     pass  # Use system default
 
-from clang.cindex import Index, CursorKind, TranslationUnit
+from clang.cindex import CursorKind, Index, TranslationUnit
 
 from gaptrace.models.decision_point import (
-    DecisionPoint, DecisionType, FunctionAnalysis, ParseResult
+    DecisionPoint,
+    DecisionType,
+    FunctionAnalysis,
+    ParseResult,
 )
 
 

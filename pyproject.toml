@@ -4,7 +4,7 @@ version = "0.1.0"
 dependencies = [
     "typer",          # CLI framework
     "rich",           # Terminal formatting
-    "clang",          # AST parsing (libclang Python bindings)
+    "clang==11.0",    # AST parsing (libclang Python bindings, pinned to LLVM 11)
     "openai",         # LLM integration
 ]
 
