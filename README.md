@@ -56,35 +56,45 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### Current Usage (v0.1.0 Only)
+### Current Usage (v0.1.0)
 
 ```bash
 # Scan a directory for test gaps (FOUNDATION ONLY)
 gaptrace scan ./gaptrace/sample_project
 
+# Parse C++ file and extract decision points (NEW - Phase 1)
+gaptrace parse --src src/main.cpp
+
+# Parse with coverage mapping (NEW - Phase 1)
+gaptrace parse --src src/main.cpp --coverage lcov.info
+
+# Export to JSON
+gaptrace parse --src src/main.cpp --output results.json
+
 # View help
 gaptrace --help
-gaptrace scan --help
+gaptrace parse --help
 ```
 
 ### Example Output (v0.1.0)
 
+Parse command output:
 ```
-Scanning project at: ./gaptrace/sample_project
+✅ Parsed gaptrace/sample_project/example.cpp
 
-Source files: 1
-Test files: 1
+📊 Analysis Results
+  Functions: 4
+  Decision Points: 8
+  Coverage: 37.5%
 
-Detected functions: 2
- - divide(int a, int b)
- - add(int x, y)
-
---- Gap Analysis ---
-❌ divide: Missing division by zero
-   Why: Function performs division but no test uses denominator = 0
+⚠️  Critical Gaps (uncovered critical paths):
+  getStatus():
+    - Line 19: switch
+  calculateDiscount():
+    - Line 49: if
+    - Line 51: if
+    - Line 53: if
 ```
-
-**⚠️ Note**: This output is based on heuristics and has false positives. Real gap analysis comes in Phase 1-2.
 
 ---
 
@@ -112,43 +122,49 @@ gaptrace/
 ├── parser/               # AST parsing — PHASE 1 ✅
 │   ├── __init__.py
 │   └── ast_parser.py     # libclang-based C++ AST parser (WORKING)
-├── coverage/             # Coverage file parsing — PHASE 1 (WIP)
-│   └── __init__.py
+├── coverage/             # Coverage file parsing — PHASE 1 ✅
+│   ├── __init__.py
+│   └── lcov_reader.py    # LCOV .info file parser
 └── sample_project/       # Example files
     ├── math.cpp
     ├── math_test.cpp
-    └── example.cpp       # Complex example with 4 functions, 8 decision points
+    ├── example.cpp       # Complex example with 4 functions, 8 decision points
+    └── example.info      # Sample lcov coverage file
 ```
 
-### ⚠️ Current Limitations
-- **No coverage integration** — doesn't read lcov/gcov files yet (Phase 1 Step 5)
+### ⚠️ Current Limitations (Phase 2+ Work)
 - **No LLM** — no AI-powered explanations (Phase 2)
-- **CLI not integrated** — AST parser works standalone, needs CLI command (Phase 1 Step 6)
-- **False positives** — heuristic gap detector needs phase 1-2 work
+- **Heuristic detector** — has false positives (Phase 2+)
 
 ---
 
-## 📦 Phase 1 Implementation Status
+## 📦 Phase 1: ✅ COMPLETE
 
-### ✅ Completed Tasks
+All 6 steps delivered and tested end-to-end:
 
-**AST Parser** (Fully Functional)
-- ✅ libclang integration
-- ✅ Function extraction
-- ✅ Decision point detection (if/else, switch, loops, calls)
-- ✅ Critical path identification
-- ✅ JSON export
-- ✅ Tested on complex example.cpp (4 functions, 8 decision points)
+**Core Deliverables:**
+- ✅ Data Models: DecisionPoint, Coverage, FunctionAnalysis, ParseResult
+- ✅ AST Parser: libclang-based C/C++ parser with decision point detection  
+- ✅ Coverage Reader: LCOV .info file integration
+- ✅ CLI Integration: `gaptrace parse --src <file> --coverage <file> --output <file>`
 
-**Data Models** (Complete)
-- ✅ DecisionPoint, Coverage, FunctionAnalysis, ParseResult classes
-- ✅ Type-safe enum for decision types
-- ✅ JSON serialization support
+**Verification on example.cpp:**
+- ✅ 4 functions parsed correctly
+- ✅ 8 decision points identified (if, switch, loops, function calls)
+- ✅ Coverage percentage calculated (37.5% with sample lcov file)
+- ✅ Critical paths marked (null checks, error returns)
+- ✅ JSON export working
+- ✅ All CLI commands functional and tested
 
-### 🔄 In Progress
+**Ready for Phase 2: Gap Analyzer & LLM Integration**
 
-- Coverage reader (lcov/gcov integration)
-- CLI integration (`gaptrace parse` command)
+---
+
+## 📊 Phase 1 Status Bar
+
+```
+[██████████████████████████] 100% COMPLETE ✅
+```
 
 ---
 
@@ -159,28 +175,35 @@ gaptrace/
 ```
 Your C++ source file
         ↓
-  [Clang AST Parser]        ← extracts functions, branches, conditions
+  [Clang AST Parser]        ← extracts functions, branches, conditions ✅
         ↓
-  [gcov/lcov Parser]        ← reads coverage report, maps to AST
+  [gcov/lcov Parser]        ← reads coverage report, maps to AST ✅
         ↓
   [Gap Analyzer]            ← finds branches that ARE covered but
-        ↓                      scenarios that are logically missing
+        ↓                      scenarios that are logically missing (Phase 2)
   [LLM Engine]              ← sends context to OpenAI, gets
-        ↓                      missing scenario descriptions
-  [Report Generator]        ← outputs to terminal or markdown file
+        ↓                      missing scenario descriptions (Phase 2)
+  [Report Generator]        ← outputs to terminal or markdown file (Phase 3)
 ```
 
-### Planned Project Structure (After Phase 1-3)
+### Project Structure (Phase 1 Complete)
 
 ```
 gaptrace/
-├── cli.py                 # CLI (enhanced with new commands)
-├── scanner.py             # File discovery (reused)
-├── parser/                # AST parsing (libclang) — Phase 1
-├── coverage/              # Coverage file parsing — Phase 1
-├── analyzer/              # Gap detection logic — Phase 2
-├── llm/                   # LLM integration — Phase 2
-├── output/                # Report formatting — Phase 3
+├── cli.py                 # CLI with parse command ✅
+├── scanner.py             # File discovery (foundation)
+├── models/                # Data models ✅
+│   ├── __init__.py
+│   └── decision_point.py  # DecisionPoint, Coverage, etc.
+├── parser/                # AST parsing ✅
+│   ├── __init__.py
+│   └── ast_parser.py      # libclang parser
+├── coverage/              # Coverage reader ✅
+│   ├── __init__.py
+│   └── lcov_reader.py     # LCOV file parser
+├── analyzer/              # Gap analyzer (Phase 2)
+├── llm/                   # LLM integration (Phase 2)
+├── output/                # Report formatting (Phase 3)
 └── sample_project/        # Example C++ project
 ```
 
