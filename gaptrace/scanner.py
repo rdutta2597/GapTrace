@@ -1,7 +1,6 @@
 from pathlib import Path
 from gaptrace.function_parser import extract_functions
 from gaptrace.test_parser import extract_tests
-from gaptrace.gap_detector import detect_division_gaps
 
 
 def classify_files(files):
@@ -52,13 +51,5 @@ def scan_project(path):
     for f in functions:
         print(f" - {f['name']}({f['args']})")
 
-    # 🔥 NEW: Detect gaps
-    gaps = detect_division_gaps(functions, source_code, test_code)
-
-    print("\n--- Gap Analysis ---")
-    if not gaps:
-        print("✅ No obvious gaps found")
-    else:
-        for g in gaps:
-            print(f"❌ {g['function']}: {g['issue']}")
-            print(f"   Why: {g['why']}\n")
+    print("\n⚠️  Note: For accurate gap analysis, use 'gaptrace parse --src <file>'")
+    print("   which uses AST-based analysis instead of heuristics.")

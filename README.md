@@ -59,13 +59,10 @@ pip install -e .
 ### Current Usage (v0.1.0)
 
 ```bash
-# Scan a directory for test gaps (FOUNDATION ONLY)
-gaptrace scan ./gaptrace/sample_project
-
-# Parse C++ file and extract decision points (NEW - Phase 1)
+# ✅ RECOMMENDED: Parse C++ file with AST-based analysis (Phase 1)
 gaptrace parse --src src/main.cpp
 
-# Parse with coverage mapping (NEW - Phase 1)
+# Parse with coverage mapping
 gaptrace parse --src src/main.cpp --coverage lcov.info
 
 # Export to JSON
@@ -74,6 +71,9 @@ gaptrace parse --src src/main.cpp --output results.json
 # View help
 gaptrace --help
 gaptrace parse --help
+
+# Legacy: Scan for basic file info (heuristic-based, not recommended)
+gaptrace scan ./gaptrace/sample_project
 ```
 
 ### Example Output (v0.1.0)
@@ -100,12 +100,12 @@ Parse command output:
 
 ## 📋 Current Features (v0.1.0)
 
-### ✅ What Works Now
-- **CLI Foundation**: Typer-based `gaptrace scan` command
+### ✅ What Works Now (Phase 1)
+- **AST Parser**: libclang-based C/C++ parsing with decision point extraction ✅
+- **Coverage Reader**: LCOV .info file parsing and integration ✅
+- **Parse Command**: `gaptrace parse --src <file> --coverage <file> --output <file>` ✅
+- **JSON Export**: Complete results exported to JSON ✅
 - **File Discovery**: Finds C/C++ files (`.cpp`, `.cc`, `.cxx`, `.c`, `.h`, `.hpp`, `.hxx`)
-- **Test Classification**: Separates test files from source files
-- **Function Extraction**: Regex-based function signature parsing
-- **Basic Gap Heuristics**: Simple pattern matching (e.g., division operator detection)
 
 ### 🏗️ Current Project Structure
 ```
