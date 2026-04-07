@@ -56,21 +56,18 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-### Basic Usage
+### Current Usage (v0.1.0 Only)
 
 ```bash
-# Scan a directory for test gaps
-gaptrace scan ./src
-
-# Scan current directory
-gaptrace scan .
+# Scan a directory for test gaps (FOUNDATION ONLY)
+gaptrace scan ./gaptrace/sample_project
 
 # View help
 gaptrace --help
 gaptrace scan --help
 ```
 
-### Example Output
+### Example Output (v0.1.0)
 
 ```
 Scanning project at: ./gaptrace/sample_project
@@ -87,101 +84,238 @@ Detected functions: 2
    Why: Function performs division but no test uses denominator = 0
 ```
 
+**⚠️ Note**: This output is based on heuristics and has false positives. Real gap analysis comes in Phase 1-2.
+
 ---
 
 ## 📋 Current Features (v0.1.0)
 
-### ✅ Implemented
-- **C/C++ File Detection**: Scans `.cpp`, `.cc`, `.cxx`, `.c`, `.h`, `.hpp`, `.hxx` files
-- **Function Extraction**: Identifies function signatures in source code
-- **Test File Classification**: Separates source files from test files (files with "test" in name)
-- **Division-by-Zero Detection**: Identifies functions with division operations but no zero-denominator tests
-- **CLI Interface**: Easy-to-use command-line interface with subcommands
+### ✅ What Works Now
+- **CLI Foundation**: Typer-based `gaptrace scan` command
+- **File Discovery**: Finds C/C++ files (`.cpp`, `.cc`, `.cxx`, `.c`, `.h`, `.hpp`, `.hxx`)
+- **Test Classification**: Separates test files from source files
+- **Function Extraction**: Regex-based function signature parsing
+- **Basic Gap Heuristics**: Simple pattern matching (e.g., division operator detection)
 
-### 📌 Supported Test Frameworks
-- **Google Test (gtest)**: Basic pattern detection
+### 🏗️ Current Project Structure
+```
+gaptrace/
+├── __init__.py           # Package initialization
+├── cli.py                # CLI with scan command (works)
+├── scanner.py            # File discovery (works)
+├── function_parser.py    # Function extraction (works)
+├── test_parser.py        # Test pattern detection (basic)
+├── gap_detector.py       # Gap detection (heuristic-based)
+└── sample_project/       # Example files
+    ├── math.cpp
+    └── math_test.cpp
+```
+
+### ⚠️ Current Limitations
+- **No AST parsing** — uses regex (fragile, error-prone)
+- **No coverage integration** — doesn't read lcov/gcov files
+- **No LLM** — no AI-powered explanations
+- **Function-agnostic** — flags all functions if pattern found in entire file
+- **False positives** — limited accuracy
+- **CLI mismatch** — README shows `gaptrace analyze` but only `gaptrace scan` works
 
 ---
 
-## 🔧 Architecture
+## 🏗️ Architecture (GapTrace Vision)
+
+### Phase 1-5: End-to-End Flow
+
+```
+Your C++ source file
+        ↓
+  [Clang AST Parser]        ← extracts functions, branches, conditions
+        ↓
+  [gcov/lcov Parser]        ← reads coverage report, maps to AST
+        ↓
+  [Gap Analyzer]            ← finds branches that ARE covered but
+        ↓                      scenarios that are logically missing
+  [LLM Engine]              ← sends context to OpenAI, gets
+        ↓                      missing scenario descriptions
+  [Report Generator]        ← outputs to terminal or markdown file
+```
+
+### Planned Project Structure (After Phase 1-3)
 
 ```
 gaptrace/
-├── cli.py              # CLI entry point with subcommands
-├── scanner.py          # Project scanning and file discovery
-├── function_parser.py  # C/C++ function extraction
-├── test_parser.py      # Test framework pattern detection
-├── gap_detector.py     # Gap analysis engine
-└── sample_project/     # Example C/C++ project for testing
+├── cli.py                 # CLI (enhanced with new commands)
+├── scanner.py             # File discovery (reused)
+├── parser/                # AST parsing (libclang) — Phase 1
+├── coverage/              # Coverage file parsing — Phase 1
+├── analyzer/              # Gap detection logic — Phase 2
+├── llm/                   # LLM integration — Phase 2
+├── output/                # Report formatting — Phase 3
+└── sample_project/        # Example C++ project
 ```
 
 ---
 
-## 🧪 Testing with Sample Project
+## 📊 Sample Output (What Phase 2+ Will Show)
 
-```bash
-# The repository includes a sample project
-gaptrace scan gaptrace/sample_project
+Once Phases 1-2 are complete, users will see:
 
-# Expected output: 2 functions detected, division-by-zero gap identified
 ```
+$ gaptrace analyze --src network_handler.cpp --coverage lcov.info
+
+GapTrace v1.0 — Scenario Gap Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📄 network_handler.cpp
+
+  ┌─ connect() — 3 gaps found
+  │
+  │  ⚠ MISSING: connection timeout scenario
+  │    → All tests call connect() with responsive servers.
+  │      No test exercises behavior when server takes >30s to respond.
+  │
+  │  ⚠ MISSING: simultaneous connection attempts
+  │    → connect() has a mutex guard but no test verifies
+  │      thread-safety under concurrent calls.
+  │
+  │  ⚠ MISSING: invalid port range (0 or >65535)
+  │    → Port validation branch is covered but only with
+  │      valid ports. Boundary values never tested.
+
+Coverage: 87% ✅  |  Logical gaps: 3 ⚠  |  Risk: MEDIUM
+```
+
+**⚠️ Currently (v0.1.0)**: Use `gaptrace scan` with heuristic-based output. Full analysis coming Phase 1-2.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Language**: Python 3.14+
-- **CLI Framework**: Typer
-- **Formatting**: Rich
-- **Code Analysis**: Regex-based parsing (AST coming in Phase 2)
+| Layer | Technology | Details |
+|-------|-----------|----------|
+| **Language** | Python 3.11+ | |
+| **AST Parsing** | libclang (Python bindings) | `clang` pip package |
+| **Coverage** | lcov .info files | gtest + gcov native output |
+| **LLM** | OpenAI gpt-4o | via `openai` SDK |
+| **CLI** | Typer | Type-safe commands |
+| **Output** | Rich + Markdown | Terminal formatting + file reports |
+| **Packaging** | pyproject.toml | `pip install gaptrace` |
+
+### Dependencies (to be added Phase 1)
+```toml
+dependencies = [
+    "typer",           # CLI framework
+    "rich",            # Terminal formatting
+    "clang",           # AST parsing
+    "openai",          # LLM integration
+]
+```
 
 ---
 
-## 📈 Roadmap
+## 📅 Build Phases (Phases 1-5)
 
-### Phase 1 ✅ (Complete)
-- [x] Basic CLI structure with subcommands
-- [x] Multi-format C/C++ file detection
-- [x] Function and test extraction
-- [x] Division-by-zero gap detection
+### Phase 1 — Parser + Coverage Reader
+**Goal**: Outputs raw JSON of decision points
+- [ ] Implement libclang AST parser
+- [ ] Build lcov/gcov coverage file reader
+- [ ] Extract decision points (branches, conditions, loops)
+- [ ] JSON output working
 
-### Phase 2 (Next)
-- [ ] AST-based parsing (replace regex patterns)
-- [ ] Function-to-test mapping
-- [ ] Additional gap detectors (null checks, bounds validation, error paths)
-- [ ] Improved test framework support
+### Phase 2 — Gap Analyzer + LLM Integration
+**Goal**: Gap analyzer logic working, LLM returns scenario descriptions
+- [ ] Implement gap analyzer (coverage → AST mapping)
+- [ ] Integrate OpenAI API
+- [ ] Basic terminal output formatting
+- [ ] Test end-to-end on sample project
 
-### Phase 3 (Future)
-- [ ] Risk scoring algorithm
-- [ ] Detailed reports (JSON, HTML)
-- [ ] Configuration file support
+### Phase 3 — CLI Polish + Markdown Reports
+**Goal**: Production-ready CLI with multiple output formats
+- [ ] Error handling and validation
+- [ ] Add `--out markdown` flag for reports
+- [ ] Add `--json` and `--verbose` flags
+- [ ] Polish help text and examples
 
-### Phase 4 (Vision)
-- [ ] VS Code extension
-- [ ] IDE integration
-- [ ] Advanced analysis features
+### Phase 4 — Real-World Testing + PyPI Release
+**Goal**: Tested on real repos, published to PyPI
+- [ ] Test on 2-3 open-source C++ repositories
+- [ ] Fix edge cases and performance issues
+- [ ] Create installation guide
+- [ ] Publish to PyPI
+### Phase 5 — VS Code Extension
+**Goal**: IDE integration for seamless gap analysis
+- [ ] Build VS Code extension in TypeScript
+- [ ] Integrate with CLI backend
+- [ ] Real-time gap detection in editor
+- [ ] Publish to VS Code marketplace
+---
+
+## 📅 Build Phases (Phases 1-5)
+
+### Phase 1 — Parser + Coverage Reader
+**Goal**: Outputs raw JSON of decision points
+- [ ] Implement libclang AST parser
+- [ ] Build lcov/gcov coverage file reader
+- [ ] Extract decision points (branches, conditions, loops)
+- [ ] JSON output working
+
+### Phase 2 — Gap Analyzer + LLM Integration
+**Goal**: Gap analyzer logic working, LLM returns scenario descriptions
+- [ ] Implement gap analyzer (coverage → AST mapping)
+- [ ] Integrate OpenAI API
+- [ ] Basic terminal output formatting
+- [ ] Test end-to-end on sample project
+
+### Phase 3 — CLI Polish + Markdown Reports
+**Goal**: Production-ready CLI with multiple output formats
+- [ ] Error handling and validation
+- [ ] Add `gaptrace analyze --src foo.cpp --coverage lcov.info`
+- [ ] Add `--out markdown` flag for reports
+- [ ] Add `--json` and `--verbose` flags
+- [ ] Polish help text and examples
+
+### Phase 4 — Real-World Testing + PyPI Release
+**Goal**: Tested on real repos, published to PyPI
+- [ ] Test on 2-3 open-source C++ repositories
+- [ ] Fix edge cases and performance issues
+- [ ] Create installation guide
+- [ ] Publish to PyPI
+
+### Phase 5 — VS Code Extension
+**Goal**: IDE integration for seamless gap analysis
+- [ ] Build VS Code extension in TypeScript
+- [ ] Integrate with CLI backend
+- [ ] Real-time gap detection in editor
+- [ ] Publish to VS Code marketplace
 
 ---
 
-## ⚠️ Limitations (Current Version)
+## ⚠️ Current Status
 
-- Uses regex-based parsing (not AST-based yet)
-- Limited gap detection (only division-by-zero)
-- Basic test framework support
-- No correlation between specific tests and functions
-- C/C++ only (future: multi-language support)
+**v0.1.0 (Current)**
+- ✅ CLI foundation with subcommands (`gaptrace scan`)
+- ✅ File discovery and classification
+- ✅ Function extraction (regex-based)
+- ❌ AST parser (coming Phase 1)
+- ❌ Coverage reader (coming Phase 1)
+- ❌ Gap analyzer (coming Phase 2)
+- ❌ LLM integration (coming Phase 2)
+- ❌ Markdown reports (coming Phase 3)
+- ❌ VS Code extension (coming Phase 5)
+
+**What v0.1.0 Does**: Foundation with basic CLI and file scanning
+**What v0.1.0 Doesn't Do**: Real gap analysis (AST, coverage, LLM) - coming Phase 1-2
 
 ---
 
-## 📝 Development
+## 📝 Development Roadmap
 
-This is an active development project. The codebase is organized for incremental improvements with clear separation of concerns.
+This is an active development project with a 5-phase roadmap:
 
-**Contributing Areas**:
-- Parser improvements (move to AST-based)
-- New gap detectors
-- Test framework support
-- Report generation
+**Phase 1**: AST parser + coverage reader (JSON output)
+**Phase 2**: Gap analyzer + LLM integration (scenario descriptions)
+**Phase 3**: CLI polish + markdown reports (production-ready)
+**Phase 4**: Real-world testing + PyPI release (available for install)
+**Phase 5**: VS Code extension (IDE integration)
 
 ---
 

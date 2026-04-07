@@ -1,7 +1,12 @@
 [project]
 name = "gaptrace"
 version = "0.1.0"
-dependencies = ["typer", "rich"]
+dependencies = [
+    "typer",          # CLI framework
+    "rich",           # Terminal formatting
+    "clang",          # AST parsing (libclang Python bindings)
+    "openai",         # LLM integration
+]
 
 [project.scripts]
 gaptrace = "gaptrace.cli:main"
