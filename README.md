@@ -106,18 +106,49 @@ gaptrace/
 ├── function_parser.py    # Function extraction (works)
 ├── test_parser.py        # Test pattern detection (basic)
 ├── gap_detector.py       # Gap detection (heuristic-based)
+├── models/               # Data models — PHASE 1 ✅
+│   ├── __init__.py
+│   └── decision_point.py # DecisionPoint, Coverage, FunctionAnalysis
+├── parser/               # AST parsing — PHASE 1 ✅
+│   ├── __init__.py
+│   └── ast_parser.py     # libclang-based C++ AST parser (WORKING)
+├── coverage/             # Coverage file parsing — PHASE 1 (WIP)
+│   └── __init__.py
 └── sample_project/       # Example files
     ├── math.cpp
-    └── math_test.cpp
+    ├── math_test.cpp
+    └── example.cpp       # Complex example with 4 functions, 8 decision points
 ```
 
 ### ⚠️ Current Limitations
-- **No AST parsing** — uses regex (fragile, error-prone)
-- **No coverage integration** — doesn't read lcov/gcov files
-- **No LLM** — no AI-powered explanations
-- **Function-agnostic** — flags all functions if pattern found in entire file
-- **False positives** — limited accuracy
-- **CLI mismatch** — README shows `gaptrace analyze` but only `gaptrace scan` works
+- **No coverage integration** — doesn't read lcov/gcov files yet (Phase 1 Step 5)
+- **No LLM** — no AI-powered explanations (Phase 2)
+- **CLI not integrated** — AST parser works standalone, needs CLI command (Phase 1 Step 6)
+- **False positives** — heuristic gap detector needs phase 1-2 work
+
+---
+
+## 📦 Phase 1 Implementation Status
+
+### ✅ Completed Tasks
+
+**AST Parser** (Fully Functional)
+- ✅ libclang integration
+- ✅ Function extraction
+- ✅ Decision point detection (if/else, switch, loops, calls)
+- ✅ Critical path identification
+- ✅ JSON export
+- ✅ Tested on complex example.cpp (4 functions, 8 decision points)
+
+**Data Models** (Complete)
+- ✅ DecisionPoint, Coverage, FunctionAnalysis, ParseResult classes
+- ✅ Type-safe enum for decision types
+- ✅ JSON serialization support
+
+### 🔄 In Progress
+
+- Coverage reader (lcov/gcov integration)
+- CLI integration (`gaptrace parse` command)
 
 ---
 

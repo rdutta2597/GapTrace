@@ -1,0 +1,104 @@
+{
+  "file": "gaptrace/sample_project/example.cpp",
+  "total_decision_points": 8,
+  "covered_decision_points": 0,
+  "coverage_percentage": 0.0,
+  "functions": {
+    "validateAge": {
+      "name": "validateAge",
+      "start_line": 5,
+      "end_line": 15,
+      "total_branches": 2,
+      "covered_branches": 0,
+      "branch_coverage": 0.0,
+      "decision_points": [
+        {
+          "line": 6,
+          "type": "if",
+          "condition": "if ( age < 0",
+          "covered": false,
+          "coverage_percent": 0.0
+        },
+        {
+          "line": 10,
+          "type": "if",
+          "condition": "if ( age < 18",
+          "covered": false,
+          "coverage_percent": 0.0
+        }
+      ]
+    },
+    "getStatus": {
+      "name": "getStatus",
+      "start_line": 18,
+      "end_line": 29,
+      "total_branches": 1,
+      "covered_branches": 0,
+      "branch_coverage": 0.0,
+      "decision_points": [
+        {
+          "line": 19,
+          "type": "switch",
+          "condition": "switch ( code ) {",
+          "covered": false,
+          "coverage_percent": 0.0
+        }
+      ]
+    },
+    "processData": {
+      "name": "processData",
+      "start_line": 32,
+      "end_line": 43,
+      "total_branches": 2,
+      "covered_branches": 0,
+      "branch_coverage": 0.0,
+      "decision_points": [
+        {
+          "line": 33,
+          "type": "if",
+          "condition": "if ( ptr == nullptr",
+          "covered": false,
+          "coverage_percent": 0.0
+        },
+        {
+          "line": 38,
+          "type": "for/while",
+          "condition": "for ( int i =",
+          "covered": false,
+          "coverage_percent": 0.0
+        }
+      ]
+    },
+    "calculateDiscount": {
+      "name": "calculateDiscount",
+      "start_line": 46,
+      "end_line": 58,
+      "total_branches": 3,
+      "covered_branches": 0,
+      "branch_coverage": 0.0,
+      "decision_points": [
+        {
+          "line": 49,
+          "type": "if",
+          "condition": "if ( isPremium ) {",
+          "covered": false,
+          "coverage_percent": 0.0
+        },
+        {
+          "line": 51,
+          "type": "if",
+          "condition": "if ( yearsCustomer > 5",
+          "covered": false,
+          "coverage_percent": 0.0
+        },
+        {
+          "line": 53,
+          "type": "if",
+          "condition": "if ( amount > 1000",
+          "covered": false,
+          "coverage_percent": 0.0
+        }
+      ]
+    }
+  }
+}
