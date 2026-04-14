@@ -105,9 +105,19 @@ gaptrace parse --src src/main.cpp --coverage lcov.info
 # Export to JSON
 gaptrace parse --src src/main.cpp --output results.json
 
+# ✅ NEW (Phase 2): Analyze gaps with scenario descriptions (mock LLM)
+gaptrace analyze --src src/main.cpp --coverage lcov.info
+
+# Analyze with OpenAI (requires OPENAI_API_KEY)
+gaptrace analyze --src src/main.cpp --coverage lcov.info --openai
+
+# Export analysis results
+gaptrace analyze --src src/main.cpp --coverage lcov.info --output report.json
+
 # View help
 gaptrace --help
 gaptrace parse --help
+gaptrace analyze --help
 
 # Legacy: Scan for basic file info (heuristic-based, not recommended)
 gaptrace scan ./gaptrace/sample_project
@@ -135,12 +145,15 @@ Parse command output:
 
 ---
 
-## 📋 Current Features (v0.1.0)
+## 📋 Current Features (v0.2.0 - Phase 1-2)
 
-### ✅ What Works Now (Phase 1)
+### ✅ What Works Now (Phase 1 + Phase 2)
 - **AST Parser**: libclang-based C/C++ parsing with decision point extraction ✅
 - **Coverage Reader**: LCOV .info file parsing and integration ✅
 - **Parse Command**: `gaptrace parse --src <file> --coverage <file> --output <file>` ✅
+- **Gap Analyzer**: Identifies uncovered logical paths in code ✅ (Phase 2)
+- **LLM Integration**: Abstract LLM interface with mock + OpenAI support ✅ (Phase 2)
+- **Analyze Command**: `gaptrace analyze --src <file> --coverage <file> [--openai]` ✅ (Phase 2)
 - **JSON Export**: Complete results exported to JSON ✅
 - **File Discovery**: Finds C/C++ files (`.cpp`, `.cc`, `.cxx`, `.c`, `.h`, `.hpp`, `.hxx`)
 
@@ -148,7 +161,7 @@ Parse command output:
 ```
 gaptrace/
 ├── __init__.py           # Package initialization
-├── cli.py                # CLI with scan command (works)
+├── cli.py                # CLI with parse & analyze commands ✅
 ├── scanner.py            # File discovery (works)
 ├── function_parser.py    # Function extraction (works)
 ├── test_parser.py        # Test pattern detection (basic)
@@ -162,45 +175,50 @@ gaptrace/
 ├── coverage/             # Coverage file parsing — PHASE 1 ✅
 │   ├── __init__.py
 │   └── lcov_reader.py    # LCOV .info file parser
+├── analyzer/             # Gap analyzer — PHASE 2 ✅
+│   ├── __init__.py
+│   └── gap_analyzer.py   # Core gap detection logic (WORKING)
+├── llm/                  # LLM integration — PHASE 2 ✅
+│   ├── __init__.py
+│   ├── base_client.py    # Abstract LLM interface
+│   ├── mock_client.py    # Mock client (no API needed)
+│   └── openai_client.py  # OpenAI GPT-4o client (optional)
 └── sample_project/       # Example files
     ├── math.cpp
     ├── math_test.cpp
-    ├── example.cpp       # Complex example with 4 functions, 8 decision points
+    ├── example.cpp       # Complex example with 61 functions, 15 decision points
     └── example.info      # Sample lcov coverage file
 ```
 
-### ⚠️ Current Limitations (Phase 2+ Work)
-- **No LLM** — no AI-powered explanations (Phase 2)
-- **Heuristic detector** — has false positives (Phase 2+)
+### ⚠️ Current Limitations (Phase 3+ Work)
+- **Scenario Mapping** — Basic descriptions, no test-to-code mapping yet (Phase 3)
+- **Report Formatting** — CLI output only, no markdown reports yet (Phase 3)
 
 ---
 
-## 📦 Phase 1: ✅ COMPLETE
+## 📦 Phase 1-2: ✅ COMPLETE
 
-All 6 steps delivered and tested end-to-end:
-
-**Core Deliverables:**
+**Phase 1 Deliverables:**
 - ✅ Data Models: DecisionPoint, Coverage, FunctionAnalysis, ParseResult
 - ✅ AST Parser: libclang-based C/C++ parser with decision point detection  
 - ✅ Coverage Reader: LCOV .info file integration
 - ✅ CLI Integration: `gaptrace parse --src <file> --coverage <file> --output <file>`
 
-**Verification on example.cpp:**
-- ✅ 4 functions parsed correctly
-- ✅ 8 decision points identified (if, switch, loops, function calls)
-- ✅ Coverage percentage calculated (37.5% with sample lcov file)
-- ✅ Critical paths marked (null checks, error returns)
-- ✅ JSON export working
-- ✅ All CLI commands functional and tested
+**Phase 2 Deliverables:**
+- ✅ Gap Analyzer: Identifies uncovered logical paths
+- ✅ LLM Interface: Abstract design with MockClient + OpenAIClient
+- ✅ Analyze Command: `gaptrace analyze --src <file> --coverage <file>`
+- ✅ Scenario Descriptions: Mock templates (ready for OpenAI integration)
+- ✅ JSON Export: Gap analysis results
 
-**Ready for Phase 2: Gap Analyzer & LLM Integration**
+**Ready for Phase 3: Report Formatting & CLI Polish**
 
 ---
 
-## 📊 Phase 1 Status Bar
+## 📊 Phase 1-2 Status Bar
 
 ```
-[██████████████████████████] 100% COMPLETE ✅
+[████████████████████████████████████████████████] 100% COMPLETE ✅
 ```
 
 ---
@@ -246,7 +264,42 @@ gaptrace/
 
 ---
 
-## 📊 Sample Output (What Phase 2+ Will Show)
+## 🤖 Using the LLM Integration
+
+### Option 1: Mock LLM (Default - No API Key Needed)
+```bash
+# Use built-in mock client for testing
+gaptrace analyze --src src/main.cpp --coverage lcov.info
+```
+
+This uses pre-defined scenario templates without requiring any API key. Perfect for development!
+
+### Option 2: OpenAI GPT-4o (Real Descriptions)
+```bash
+# 1. Get API key from https://platform.openai.com/api-keys
+# 2. Set environment variable
+export OPENAI_API_KEY="sk-..."
+
+# 3. Run with --openai flag
+gaptrace analyze --src src/main.cpp --coverage lcov.info --openai
+```
+
+**Cost**: ~$0.005-0.01 per file analyzed (depends on file size)
+
+### Option 3: Bring Your Own LLM
+You can implement a custom LLM client:
+```python
+from gaptrace.llm import LLMClient
+
+class CustomLLMClient(LLMClient):
+    def describe_gap(self, function_name, decision_type, line_number, source_code):
+        # Your implementation here
+        return "Custom gap description..."
+
+analyzer = GapAnalyzer(llm_client=CustomLLMClient())
+```
+
+---
 
 Once Phases 1-2 are complete, users will see:
 
@@ -307,54 +360,19 @@ dependencies = [
 
 ### Phase 1 — Parser + Coverage Reader
 **Goal**: Outputs raw JSON of decision points
-- [ ] Implement libclang AST parser
-- [ ] Build lcov/gcov coverage file reader
-- [ ] Extract decision points (branches, conditions, loops)
-- [ ] JSON output working
+- [x] Implement libclang AST parser
+- [x] Build lcov/gcov coverage file reader
+- [x] Extract decision points (branches, conditions, loops)
+- [x] JSON output working
 
 ### Phase 2 — Gap Analyzer + LLM Integration
 **Goal**: Gap analyzer logic working, LLM returns scenario descriptions
-- [ ] Implement gap analyzer (coverage → AST mapping)
-- [ ] Integrate OpenAI API
-- [ ] Basic terminal output formatting
-- [ ] Test end-to-end on sample project
-
-### Phase 3 — CLI Polish + Markdown Reports
-**Goal**: Production-ready CLI with multiple output formats
-- [ ] Error handling and validation
-- [ ] Add `--out markdown` flag for reports
-- [ ] Add `--json` and `--verbose` flags
-- [ ] Polish help text and examples
-
-### Phase 4 — Real-World Testing + PyPI Release
-**Goal**: Tested on real repos, published to PyPI
-- [ ] Test on 2-3 open-source C++ repositories
-- [ ] Fix edge cases and performance issues
-- [ ] Create installation guide
-- [ ] Publish to PyPI
-### Phase 5 — VS Code Extension
-**Goal**: IDE integration for seamless gap analysis
-- [ ] Build VS Code extension in TypeScript
-- [ ] Integrate with CLI backend
-- [ ] Real-time gap detection in editor
-- [ ] Publish to VS Code marketplace
----
-
-## 📅 Build Phases (Phases 1-5)
-
-### Phase 1 — Parser + Coverage Reader
-**Goal**: Outputs raw JSON of decision points
-- [ ] Implement libclang AST parser
-- [ ] Build lcov/gcov coverage file reader
-- [ ] Extract decision points (branches, conditions, loops)
-- [ ] JSON output working
-
-### Phase 2 — Gap Analyzer + LLM Integration
-**Goal**: Gap analyzer logic working, LLM returns scenario descriptions
-- [ ] Implement gap analyzer (coverage → AST mapping)
-- [ ] Integrate OpenAI API
-- [ ] Basic terminal output formatting
-- [ ] Test end-to-end on sample project
+- [x] Implement gap analyzer (coverage → AST mapping)
+- [x] Integrate LLM interface (abstract + mock + OpenAI)
+- [x] Basic terminal output formatting
+- [x] Test end-to-end on sample project
+- [ ] Refine gap detection heuristics
+- [ ] Add more scenario templates
 
 ### Phase 3 — CLI Polish + Markdown Reports
 **Goal**: Production-ready CLI with multiple output formats
@@ -382,19 +400,27 @@ dependencies = [
 
 ## ⚠️ Current Status
 
-**v0.1.0 (Current)**
-- ✅ CLI foundation with subcommands (`gaptrace scan`)
+**v0.2.0 (Current - Phase 1-2)**
+- ✅ CLI foundation with subcommands (`parse`, `analyze`, `scan`)
 - ✅ File discovery and classification
-- ✅ Function extraction (regex-based)
-- ❌ AST parser (coming Phase 1)
-- ❌ Coverage reader (coming Phase 1)
-- ❌ Gap analyzer (coming Phase 2)
-- ❌ LLM integration (coming Phase 2)
+- ✅ Function extraction (AST-based)
+- ✅ AST parser with decision point extraction (Phase 1)
+- ✅ Coverage reader (Phase 1)
+- ✅ Gap analyzer (Phase 2)
+- ✅ LLM interface with mock + OpenAI support (Phase 2)
 - ❌ Markdown reports (coming Phase 3)
 - ❌ VS Code extension (coming Phase 5)
 
-**What v0.1.0 Does**: Foundation with basic CLI and file scanning
-**What v0.1.0 Doesn't Do**: Real gap analysis (AST, coverage, LLM) - coming Phase 1-2
+**What v0.2.0 Does**: 
+- Parse C++ with AST, extract decision points
+- Read LCOV coverage files
+- Analyze gaps with mock scenario descriptions
+- Ready to integrate OpenAI for real LLM descriptions
+
+**What v0.2.0 Doesn't Do**: 
+- Real markdown report generation (Phase 3)
+- Test-to-code mapping (Phase 3)
+- VS Code extension (Phase 5)
 
 ---
 

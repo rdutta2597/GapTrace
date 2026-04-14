@@ -5,8 +5,10 @@ dependencies = [
     "typer",          # CLI framework
     "rich",           # Terminal formatting
     "clang==11.0",    # AST parsing (libclang Python bindings, pinned to LLVM 11)
-    "openai",         # LLM integration
 ]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]  # Optional: for real LLM scenario descriptions
 
 [project.scripts]
 gaptrace = "gaptrace.cli:main"

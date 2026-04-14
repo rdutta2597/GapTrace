@@ -1,6 +1,6 @@
 # Contributing to GapTrace
 
-Thank you for your interest in contributing! GapTrace is a developer-first CLI tool that detects missing unit test scenarios in C/C++ codebases using LLM-powered analysis.
+Thank you for your interest in contributing! GapTrace is a developer-first CLI tool that detects missing unit test scenarios in C/C++ codebases by analyzing source code structure and comparing it against coverage reports, then using LLM to explain what test scenarios are missing.
 
 ---
 
@@ -39,17 +39,25 @@ Branch naming conventions:
 ### 3. Set Up Locally
 
 ```bash
-pip install -e ".[dev]"
+# Install in development mode
+pip install -e .
+
+# Optional: Install dev dependencies if available
+pip install black ruff pytest
 ```
 
 Make sure you have `clang` and `lcov` installed:
 
 ```bash
-# Ubuntu/Debian
-sudo apt-get install clang libclang-dev lcov
+# Ubuntu/Debian (Dev Container)
+# Already installed in dev container - no action needed
+
+# Ubuntu/Debian (Local)
+sudo apt-get install clang-11 libclang-11-dev lcov
 
 # macOS
 brew install llvm lcov
+export LLVM_CONFIG_PATH=$(brew --prefix llvm)
 ```
 
 ### 4. Make Your Changes
@@ -58,11 +66,21 @@ brew install llvm lcov
 - Follow existing code style (PEP 8 for Python)
 - Add or update tests for your changes
 - Update documentation if behavior changes
+- Test both mock and OpenAI LLM modes
 
 ### 5. Test Your Changes
 
 ```bash
+# Run all tests
 pytest tests/
+
+# Test CLI commands
+gaptrace parse --src gaptrace/sample_project/example.cpp
+gaptrace analyze --src gaptrace/sample_project/example.cpp --coverage gaptrace/sample_project/example.info
+
+# Test with OpenAI (optional, requires API key)
+export OPENAI_API_KEY="your-key-here"
+gaptrace analyze --src gaptrace/sample_project/example.cpp --coverage gaptrace/sample_project/example.info --openai
 ```
 
 Please ensure all tests pass before opening a PR.
@@ -78,19 +96,29 @@ Please ensure all tests pass before opening a PR.
 
 ## What We Welcome
 
-- Bug fixes
-- Performance improvements to the AST parser or coverage mapper
-- Support for additional C++ test frameworks (Catch2, Boost.Test)
-- Improved LLM prompting strategies
-- Better output formatting
-- Documentation improvements
-- Example C++ codebases for testing
+- Bug fixes and performance improvements
+- Support for additional C++ test frameworks (Catch2, Boost.Test, Google Test)
+- Enhanced LLM prompting strategies and scenario templates
+- New LLM provider integrations (Claude, Gemini, local models)
+- Better output formatting and CLI UX improvements
+- Additional coverage format support (beyond LCOV)
+- Documentation improvements and examples
+- Test case contributions for edge cases
+
+### Current Development Focus (Phase 3)
+
+Since Phase 1-2 are complete, we're focusing on:
+- **CLI Polish**: Better error messages, progress indicators, help text
+- **Report Generation**: Markdown/HTML report formats
+- **Test-to-Code Mapping**: Linking test files to source code gaps
+- **Real-world Testing**: Validating on open-source C++ projects
 
 ## What to Avoid
 
 - Unrelated changes bundled into one PR
 - Breaking changes to the CLI interface without prior discussion
 - Adding new dependencies without opening an issue first
+- Large architectural changes without design discussion
 
 ---
 
@@ -101,6 +129,17 @@ Please ensure all tests pass before opening a PR.
 - Use type hints where possible
 - Keep functions small and focused
 - Write docstrings for public functions
+- Use `black` for formatting and `ruff` for linting
+
+---
+
+## Testing Guidelines
+
+- Add unit tests for new functionality
+- Test both mock and OpenAI LLM modes
+- Include integration tests for CLI commands
+- Test with the sample project: `gaptrace/sample_project/example.cpp`
+- Ensure tests work in both dev container and local environments
 
 ---
 
@@ -111,6 +150,7 @@ Open an issue with:
 - The command you ran
 - The full error output
 - A minimal reproducible example if possible
+- Whether you're using dev container or local setup
 
 ---
 
